@@ -1,0 +1,12 @@
+CREATE TABLE "user" (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    username VARCHAR(64) NOT NULL,
+    password VARCHAR(64) NOT NULL,
+    email VARCHAR(64),
+    gender SMALLINT NOT NULL DEFAULT 0,
+    create_time TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT idx_username UNIQUE (username),
+    CONSTRAINT idx_user_id UNIQUE (user_id)
+);

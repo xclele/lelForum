@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"lelForum/controller"
+	"lelForum/database/postgres"
 
 	//"lelForum/database/postgres"
 	//"lelForum/database/redis"
@@ -22,12 +23,11 @@ func main() {
 		fmt.Printf("init logger failed, err:%v\n", err)
 		return
 	}
-	/* SQL
-	if err := postgres.Init(settings.Conf.MySQLConfig); err != nil {
-		fmt.Printf("init mysql failed, err:%v\n", err)
+	if err := postgres.Init(settings.Conf.PostgreSQLConfig); err != nil {
+		fmt.Printf("init postgres failed, err:%v\n", err)
 		return
 	}
-	defer postgres.Close() // Close the database connection when the program exits */
+	defer postgres.Close() // Close the database connection when the program exits
 
 	/* Redis
 	if err := redis.Init(settings.Conf.RedisConfig); err != nil {

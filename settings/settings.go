@@ -10,14 +10,14 @@ import (
 var Conf = new(AppConfig)
 
 type AppConfig struct {
-	Mode         string `mapstructure:"mode"`
-	Port         int    `mapstructure:"port"`
-	*LogConfig   `mapstructure:"log"`
-	*MySQLConfig `mapstructure:"mysql"`
-	*RedisConfig `mapstructure:"redis"`
+	Mode              string `mapstructure:"mode"`
+	Port              int    `mapstructure:"port"`
+	*LogConfig        `mapstructure:"log"`
+	*PostgreSQLConfig `mapstructure:"postgresql"`
+	*RedisConfig      `mapstructure:"redis"`
 }
 
-type MySQLConfig struct {
+type PostgreSQLConfig struct {
 	Host         string `mapstructure:"host"`
 	User         string `mapstructure:"user"`
 	Password     string `mapstructure:"password"`
@@ -25,6 +25,7 @@ type MySQLConfig struct {
 	Port         int    `mapstructure:"port"`
 	MaxOpenConns int    `mapstructure:"max_open_conns"`
 	MaxIdleConns int    `mapstructure:"max_idle_conns"`
+	SSLMode      string `mapstructure:"sslmode"`
 }
 
 type RedisConfig struct {

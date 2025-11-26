@@ -1,6 +1,6 @@
 CREATE TABLE "user" (
     id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL,
+    user_id NUMERIC(20,0) NOT NULL,
     username VARCHAR(64) NOT NULL,
     password VARCHAR(64) NOT NULL,
     email VARCHAR(64),

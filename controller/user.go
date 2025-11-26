@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"lelForum/logic"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
@@ -32,7 +34,13 @@ func SignUpHandler(c *gin.Context) {
 	// Can Also use manual validation
 
 	// Business Logic
-	//logic.SignUp()
+	if err = logic.SignUp(&p); err != nil {
+		zap.L().Error("SignUp failed", zap.Error(err))
+		c.JSON(http.StatusOK, gin.H{
+			"message": "register failed: " + err.Error(),
+		})
+		return
+	}
 	// Response
 	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }

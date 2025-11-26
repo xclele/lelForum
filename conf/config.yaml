@@ -3,19 +3,20 @@ port: 8080
 
 log:
   level: "debug"
-  filename: "./log/bluebell.log"
+  filename: "./log/lelforum.log"
   max_size: 1000
   max_age: 3600
   max_backups: 5
 
-mysql:
+postgresql:
   host: 127.0.0.1
-  port: 13306
-  user: root
-  password: root1234
-  db: bluebell_pre
+  port: 5432
+  user: xclele
+  password: ""
+  db: lelForum
   max_open_conns: 100
   max_idle_conns: 20
+  sslmode: "disable"
 
 redis:
   host: 127.0.0.1

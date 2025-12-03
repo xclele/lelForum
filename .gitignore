@@ -30,7 +30,7 @@ go.work
 # Log files
 *.log
 log/
-bluebell.log
+lelforum.log
 
 # OS generated files
 .DS_Store

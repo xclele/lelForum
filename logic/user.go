@@ -1,31 +1,24 @@
 package logic
 
 import (
-	"errors"
 	"lelForum/database/postgres"
 	"lelForum/models"
+	"lelForum/pkg/jwt"
 	"lelForum/pkg/snowflake"
 )
 
 func SignUp(p *models.ParamSignUp) (err error) {
 	// See if user exists
-	var exist bool
-	exist, err = postgres.CheckUserExistence(p.Username)
+	err = postgres.CheckUserExistence(p.Username)
 	if err != nil {
-		// DB error
-		return err
+		// Exists or other error
+		return
 	}
-	if exist {
-		// User already exists
-		return errors.New("user already exists")
-	}
-
 	// Gen user ID
 	userID, err := snowflake.GetID()
 	if err != nil {
-		return err
+		return
 	}
-
 	// Create user model
 	user := &models.User{
 		UserID:   userID,
@@ -34,4 +27,16 @@ func SignUp(p *models.ParamSignUp) (err error) {
 	}
 	// Save to DB
 	return postgres.InsertUser(user)
+}
+
+func Login(p *models.ParamLogin) (string, error) {
+	user := &models.User{
+		Username: p.Username,
+		Password: p.Password,
+	}
+	// Here user is a pointer, and the userid will be filled in postgres.Login
+	if err := postgres.Login(user); err != nil {
+		return "", err
+	}
+	return jwt.GenToken(user.UserID, user.Username)
 }

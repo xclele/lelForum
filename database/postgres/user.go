@@ -2,23 +2,33 @@ package postgres
 
 import (
 	"crypto/md5"
+	"database/sql"
 	"encoding/hex"
+	"errors"
 	"lelForum/models"
 )
 
 var secret = "xclele"
+var (
+	ErrorUserExist       = errors.New("user already exists")
+	ErrorUserNotExist    = errors.New("user does not exist")
+	ErrorInvalidPassword = errors.New("invalid password")
+)
 
 // Encapsulate user-related DB operations,
 // and provide functions for the logic layer to call
 
 // CheckUserExistence checks if a user with the given username exists
-func CheckUserExistence(username string) (bool, error) {
+func CheckUserExistence(username string) (err error) {
 	sqlStr := `SELECT COUNT(user_id) FROM "user" WHERE username=$1`
 	var count int
-	if err := db.Get(&count, sqlStr, username); err != nil {
-		return false, err
+	if err = db.Get(&count, sqlStr, username); err != nil {
+		return err
 	}
-	return count > 0, nil
+	if count > 0 {
+		return ErrorUserExist
+	}
+	return
 }
 
 func QueryUserByUsername() {
@@ -39,4 +49,20 @@ func encryptPassword(oPassword string) string {
 	h := md5.New()
 	h.Write([]byte(secret))
 	return hex.EncodeToString(h.Sum([]byte(oPassword)))
+}
+
+func Login(user *models.User) (err error) {
+	originalPasswd := user.Password
+	sqlStr := `SELECT user_id,username,password FROM "user" WHERE username=$1`
+	err = db.Get(user, sqlStr, user.Username)
+	if err == sql.ErrNoRows {
+		return ErrorUserNotExist
+	}
+	if err != nil {
+		return
+	}
+	if encryptPassword(originalPasswd) != user.Password {
+		return ErrorInvalidPassword
+	}
+	return
 }

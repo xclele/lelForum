@@ -3,24 +3,30 @@ package routers
 import (
 	"lelForum/controller"
 	"lelForum/logger"
+	"lelForum/middlewares"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRoutes() *gin.Engine {
+func SetupRoutes(mode string) *gin.Engine {
+	if mode == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	r := gin.New()
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
 
 	// Sign Up route
 	r.POST("/signup", controller.SignUpHandler)
+	//Login route
+	r.POST("/login", controller.LoginHandler)
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "ping successful"})
+	r.GET("/ping", middlewares.JWTAuthMiddleware(), func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"msg": "ping successful"})
 	})
 	// Handle 404 for undefined routes
 	r.NoRoute(func(c *gin.Context) {
-		c.JSON(http.StatusNotFound, gin.H{"message": "route not found"})
+		c.JSON(http.StatusNotFound, gin.H{"msg": "route not found"})
 	})
 
 	return r

@@ -40,12 +40,12 @@ func main() {
 		return
 	}
 	// Initialize the custom parameter validator to support internationalization
-	if err := controller.InitTrans("zh"); err != nil {
+	if err := controller.InitTrans("en"); err != nil {
 		fmt.Printf("init translator failed, err:%v\n", err)
 		return
 	}
 	// Register routes
-	r := routers.SetupRoutes()
+	r := routers.SetupRoutes(settings.Conf.Mode)
 	err := r.Run(fmt.Sprintf(":%d", settings.Conf.Port))
 	if err != nil {
 		fmt.Printf("run server failed, err:%v\n", err)

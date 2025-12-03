@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"errors"
+	"lelForum/database/postgres"
 	"lelForum/logic"
 
 	"github.com/gin-gonic/gin"
@@ -8,7 +10,6 @@ import (
 	"go.uber.org/zap"
 	//"lelForum/logic"
 	"lelForum/models"
-	"net/http"
 )
 
 // SignUpHandler handles user sign-up requests
@@ -21,14 +22,10 @@ func SignUpHandler(c *gin.Context) {
 		// Check if it's a validation error
 		errs, ok := err.(validator.ValidationErrors)
 		if !ok {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": err.Error(),
-			})
+			ResponseError(c, CodeInvalidParam)
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"message": errs.Translate(trans),
-		})
+		ResponseErrorWithMsg(c, CodeInvalidParam, errs.Translate(trans))
 		return
 	}
 	// Can Also use manual validation
@@ -36,11 +33,45 @@ func SignUpHandler(c *gin.Context) {
 	// Business Logic
 	if err = logic.SignUp(&p); err != nil {
 		zap.L().Error("SignUp failed", zap.Error(err))
-		c.JSON(http.StatusOK, gin.H{
-			"message": "register failed: " + err.Error(),
-		})
+		// Check if user already exists
+		if errors.Is(err, postgres.ErrorUserExist) {
+			ResponseError(c, CodeUserExist)
+			return
+		}
+		// Other errors
+		ResponseError(c, CodeServerBusy)
 		return
 	}
 	// Response
-	c.JSON(http.StatusOK, gin.H{"message": "success"})
+	ResponseSuccess(c, nil)
+}
+
+func LoginHandler(c *gin.Context) {
+	// Get the login parameters
+	p := models.ParamLogin{}
+	err := c.ShouldBindJSON(&p)
+	if err != nil {
+		zap.L().Error("LoginHandler with invalid param", zap.Error(err))
+		// Check if it's a validation error
+		errs, ok := err.(validator.ValidationErrors)
+		if !ok {
+			ResponseError(c, CodeInvalidParam)
+			return
+		}
+		ResponseErrorWithMsg(c, CodeInvalidParam, errs.Translate(trans))
+		return
+	}
+	// Logic
+	token, err := logic.Login(&p)
+	if err != nil {
+		zap.L().Error("Login failed", zap.Error(err))
+		if errors.Is(err, postgres.ErrorUserNotExist) {
+			ResponseError(c, CodeUserNotExist)
+			return
+		}
+		ResponseError(c, CodeInvalidPassword)
+		return
+	}
+	// Response
+	ResponseSuccess(c, token)
 }

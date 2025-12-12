@@ -19,18 +19,22 @@ func main() {
 		fmt.Printf("load config failed, err:%v\n", err)
 		return
 	}
-	if err := logger.Init(settings.Conf.LogConfig, settings.Conf.Mode); err != nil {
+
+	// Get current configuration
+	cfg := settings.GetConf()
+
+	if err := logger.Init(cfg.LogConfig, cfg.Mode); err != nil {
 		fmt.Printf("init logger failed, err:%v\n", err)
 		return
 	}
-	if err := postgres.Init(settings.Conf.PostgreSQLConfig); err != nil {
+	if err := postgres.Init(cfg.PostgreSQLConfig); err != nil {
 		fmt.Printf("init postgres failed, err:%v\n", err)
 		return
 	}
 	defer postgres.Close() // Close the database connection when the program exits
 
 	/* Redis
-	if err := redis.Init(settings.Conf.RedisConfig); err != nil {
+	if err := redis.Init(cfg.RedisConfig); err != nil {
 		fmt.Printf("init redis failed, err:%v\n", err)
 		return
 	}
@@ -45,8 +49,8 @@ func main() {
 		return
 	}
 	// Register routes
-	r := routers.SetupRoutes(settings.Conf.Mode)
-	err := r.Run(fmt.Sprintf(":%d", settings.Conf.Port))
+	r := routers.SetupRoutes(settings.GetConf().Mode)
+	err := r.Run(fmt.Sprintf(":%d", settings.GetConf().Port))
 	if err != nil {
 		fmt.Printf("run server failed, err:%v\n", err)
 		return

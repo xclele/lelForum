@@ -2,11 +2,21 @@ package settings
 
 import (
 	"fmt"
+	"sync/atomic"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 )
 
+var conf atomic.Value // stores *AppConfig
+
+// GetConf returns current configuration (thread-safe)
+func GetConf() *AppConfig {
+	return conf.Load().(*AppConfig)
+}
+
+// Conf is kept for backward compatibility (direct usage not recommended)
+// Prefer using GetConf() function
 var Conf = new(AppConfig)
 
 type AppConfig struct {
@@ -48,18 +58,41 @@ type LogConfig struct {
 func Init() error {
 	viper.SetConfigFile("./conf/config.yaml")
 
-	viper.WatchConfig()
-	viper.OnConfigChange(func(in fsnotify.Event) {
-		fmt.Println("Config File was modified!")
-		viper.Unmarshal(&Conf)
-	})
-
+	// Load configuration for the first time
 	err := viper.ReadInConfig()
 	if err != nil {
-		panic(fmt.Errorf("ReadInConfig failed, err: %v", err))
+		return fmt.Errorf("ReadInConfig failed, err: %v", err)
 	}
-	if err := viper.Unmarshal(&Conf); err != nil {
-		panic(fmt.Errorf("unmarshal to Conf failed, err:%v", err))
+
+	// Unmarshal to temporary variable
+	tempConf := new(AppConfig)
+	if err := viper.Unmarshal(tempConf); err != nil {
+		return fmt.Errorf("unmarshal to Conf failed, err:%v", err)
 	}
-	return err
+
+	// Atomically store configuration
+	conf.Store(tempConf)
+	// Also update Conf for backward compatibility
+	*Conf = *tempConf
+
+	// Start config file watcher for hot reload
+	viper.WatchConfig()
+	viper.OnConfigChange(func(in fsnotify.Event) {
+		fmt.Println("Config file modified, reloading...")
+
+		newConf := new(AppConfig)
+		if err := viper.Unmarshal(newConf); err != nil {
+			fmt.Printf("Hot reload config failed: %v\n", err)
+			return
+		}
+
+		// Atomically replace configuration
+		conf.Store(newConf)
+		// Also update Conf for backward compatibility
+		*Conf = *newConf
+
+		fmt.Println("Config hot reload successful!")
+	})
+
+	return nil
 }

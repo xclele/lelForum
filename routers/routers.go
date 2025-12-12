@@ -21,9 +21,16 @@ func SetupRoutes(mode string) *gin.Engine {
 	//Login route
 	r.POST("/login", controller.LoginHandler)
 
-	r.GET("/ping", middlewares.JWTAuthMiddleware(), func(c *gin.Context) {
+	v1 := r.Group("/api/v1")
+	//Only valid for routes defined after this line
+	v1.Use(middlewares.JWTAuthMiddleware())
+	{
+		// Protected routes go here
+		v1.GET("/community", controller.CommunityHandler)
+	}
+	/*r.GET("/ping", middlewares.JWTAuthMiddleware(), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"msg": "ping successful"})
-	})
+	})*/
 	// Handle 404 for undefined routes
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"msg": "route not found"})

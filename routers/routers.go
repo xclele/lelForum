@@ -27,6 +27,9 @@ func SetupRoutes(mode string) *gin.Engine {
 	{
 		// Protected routes go here
 		v1.GET("/community", controller.CommunityHandler)
+		v1.GET("/community/:id", controller.CommunityDetailHandler)
+
+		v1.POST("/post", controller.CreatePostHandler)
 	}
 	/*r.GET("/ping", middlewares.JWTAuthMiddleware(), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"msg": "ping successful"})

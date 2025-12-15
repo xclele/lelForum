@@ -17,6 +17,7 @@ postgresql:
   max_open_conns: 100
   max_idle_conns: 20
   sslmode: "disable"
+  timezone: ""
 
 redis:
   host: 127.0.0.1

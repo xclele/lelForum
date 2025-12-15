@@ -19,14 +19,20 @@ func Init(cfg *settings.PostgreSQLConfig) (err error) {
 	}
 
 	// Build DSN, only include password if it's not empty
+	// Add timezone parameter to ensure correct time handling
+	timezone := cfg.TimeZone
+	if timezone == "" {
+		timezone = "UTC" // Default to UTC if not specified
+	}
+
 	dsn := fmt.Sprintf(
-		"host=%s port=%d user=%s dbname=%s sslmode=%s",
-		cfg.Host, cfg.Port, cfg.User, cfg.DB, cfg.SSLMode,
+		"host=%s port=%d user=%s dbname=%s sslmode=%s TimeZone=%s",
+		cfg.Host, cfg.Port, cfg.User, cfg.DB, cfg.SSLMode, timezone,
 	)
 	if cfg.Password != "" {
 		dsn = fmt.Sprintf(
-			"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-			cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DB, cfg.SSLMode,
+			"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s TimeZone=%s",
+			cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DB, cfg.SSLMode, timezone,
 		)
 	}
 

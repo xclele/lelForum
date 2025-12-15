@@ -23,3 +23,19 @@ CREATE TABLE community (
     CONSTRAINT idx_community_name UNIQUE (community_name)
 );
 INSERT INTO community VALUES (1, 1, 'Go', 'Golang', '2016-11-01 08:10:10', '2016-11-01 08:10:10');
+
+DROP TABLE IF EXISTS post;
+CREATE TABLE post (
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL,
+    title VARCHAR(128) NOT NULL,
+    content TEXT NOT NULL,
+    author_id BIGINT NOT NULL,
+    community_id INTEGER NOT NULL,
+    status SMALLINT NOT NULL DEFAULT 1,
+    create_time TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_post_id ON post(post_id);
+CREATE INDEX IF NOT EXISTS idx_author_id ON post(author_id);
+CREATE INDEX IF NOT EXISTS idx_community_id ON post(community_id);

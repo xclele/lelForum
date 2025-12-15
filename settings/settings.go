@@ -36,6 +36,7 @@ type PostgreSQLConfig struct {
 	MaxOpenConns int    `mapstructure:"max_open_conns"`
 	MaxIdleConns int    `mapstructure:"max_idle_conns"`
 	SSLMode      string `mapstructure:"sslmode"`
+	TimeZone     string `mapstructure:"timezone"`
 }
 
 type RedisConfig struct {

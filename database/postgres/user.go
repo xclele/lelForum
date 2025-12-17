@@ -31,8 +31,11 @@ func CheckUserExistence(username string) (err error) {
 	return
 }
 
-func QueryUserByUsername() {
-
+func GetUserByID(userID uint64) (user *models.User, err error) {
+	user = new(models.User)
+	sqlStr := `SELECT user_id, username FROM "user" WHERE user_id=$1`
+	err = db.Get(user, sqlStr, userID)
+	return
 }
 
 // InsertUser inserts a new user into the database

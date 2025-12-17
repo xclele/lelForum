@@ -13,3 +13,10 @@ type Post struct {
 	Content     string    `json:"content" db:"content" binding:"required"`
 	CreateTime  time.Time `json:"create_time" db:"create_time"`
 }
+
+// Use a seperate struct to get authorname and community info
+type ApiPostDetail struct {
+	AuthorName       string             `json:"author_name"`
+	*Post                               //Integrate Post info
+	*CommunityDetail `json:"community"` //Integrate Community info
+}

@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 )
 
@@ -49,4 +50,58 @@ func GetPostDetailHandler(c *gin.Context) {
 		return
 	}
 	ResponseSuccess(c, data)
+}
+
+func GetPostListHandler(c *gin.Context) {
+	//Pagination
+	pageNumStr := c.DefaultQuery("page", "0")
+	pageSizeStr := c.DefaultQuery("size", "10")
+	var (
+		page     int64
+		pageSize int64
+		err      error
+	)
+	if page, err = strconv.ParseInt(pageNumStr, 10, 64); err != nil {
+		page = 1
+	}
+	if pageSize, err = strconv.ParseInt(pageSizeStr, 10, 64); err != nil {
+		pageSize = 10
+	}
+	//Retrieve data
+	data, err := logic.GetPostList(page, pageSize)
+	//Return response
+	if err != nil {
+		zap.L().Error("logic.GetPostList() failed", zap.Error(err))
+		ResponseError(c, CodeServerBusy)
+		return
+	}
+	ResponseSuccess(c, data)
+}
+
+// Voting Part
+func PostVoteHandler(c *gin.Context) {
+	// Param Validation
+	p := new(models.ParamVoteData)
+	if err := c.ShouldBindJSON(p); err != nil {
+		errs, ok := err.(validator.ValidationErrors)
+		if !ok {
+			ResponseError(c, CodeInvalidParam)
+			return
+		}
+		errData := removeTopStruct(errs.Translate(trans))
+		ResponseErrorWithMsg(c, CodeInvalidParam, errData)
+		return
+	}
+
+	userID, err := getCurrentUser(c)
+	if err != nil {
+		ResponseError(c, CodeNeedLogin)
+		return
+	}
+
+	if err = logic.VoteForPost(userID, p); err != nil {
+		ResponseError(c, CodeServerBusy)
+		return
+	}
+	ResponseSuccess(c, nil)
 }

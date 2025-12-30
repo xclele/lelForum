@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"lelForum/controller"
 	"lelForum/database/postgres"
-
-	//"lelForum/database/postgres"
-	//"lelForum/database/redis"
+	"lelForum/database/redis"
 	"lelForum/logger"
 	"lelForum/pkg/snowflake"
 	"lelForum/routers"
@@ -33,12 +31,12 @@ func main() {
 	}
 	defer postgres.Close() // Close the database connection when the program exits
 
-	/* Redis
 	if err := redis.Init(cfg.RedisConfig); err != nil {
 		fmt.Printf("init redis failed, err:%v\n", err)
 		return
 	}
-	defer redis.Close() // Close the Redis connection when the program exits	*/
+	defer redis.Close() // Close the Redis connection when the program exits
+
 	if err := snowflake.Init(1); err != nil {
 		fmt.Printf("init snowflake failed, err:%v\n", err)
 		return

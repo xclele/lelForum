@@ -6,7 +6,7 @@ import "github.com/gin-gonic/gin"
 type ResponseData struct {
 	Code    RespCode    `json:"code"`
 	Message interface{} `json:"msg"`
-	Data    interface{} `json:"data"`
+	Data    interface{} `json:"data,omitempty"`
 }
 
 func ResponseError(c *gin.Context, code RespCode) {

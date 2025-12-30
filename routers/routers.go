@@ -31,6 +31,9 @@ func SetupRoutes(mode string) *gin.Engine {
 
 		v1.POST("/post", controller.CreatePostHandler)
 		v1.GET("/post/:id", controller.GetPostDetailHandler)
+		v1.GET("/posts", controller.GetPostListHandler)
+
+		v1.POST("/vote", controller.PostVoteHandler)
 	}
 	/*r.GET("/ping", middlewares.JWTAuthMiddleware(), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"msg": "ping successful"})

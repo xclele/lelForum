@@ -62,3 +62,21 @@ func InitTrans(locale string) (err error) {
 	}
 	return
 }
+
+// removeTopStruct trims struct names (e.g., ParamVoteData.field) from validator error keys.
+func removeTopStruct(fields map[string]string) map[string]string {
+	if len(fields) == 0 {
+		return fields
+	}
+
+	res := make(map[string]string, len(fields))
+	for field, msg := range fields {
+		parts := strings.SplitN(field, ".", 2)
+		if len(parts) == 2 {
+			res[parts[1]] = msg
+			continue
+		}
+		res[field] = msg
+	}
+	return res
+}

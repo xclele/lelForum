@@ -19,3 +19,10 @@ type ParamVoteData struct {
 	PostID    string `json:"post_id" binding:"required"`               // Post ID
 	Direction int8   `json:"direction,string" binding:"oneof=1 0 -1" ` // Vote(1) or downvote(-1)
 }
+
+type ParamPostList struct {
+	PageNum     int64  `form:"page"`
+	PageSize    int64  `form:"size"`
+	Order       string `form:"order"`
+	CommunityID int64  `form:"community_id"`
+}

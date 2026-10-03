@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math"
+	"strconv"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -17,10 +18,10 @@ const (
 var (
 	ErrVoteTimeExpire = errors.New("vote time expired")
 	VoteScore         = float64(432) // One upvote adds 432 points to the post's score
+	ErrVoteRepeated   = errors.New("repeated vote")
 )
 
-func CreatePost(postID uint64) (err error) {
-	ctx := context.Background()
+func CreatePost(ctx context.Context, postID uint64, communityID int64) (err error) {
 	//Use pipeline to execute multiple commands as a single transaction
 	pipeline := client.TxPipeline()
 	//Post time
@@ -33,6 +34,8 @@ func CreatePost(postID uint64) (err error) {
 		Score:  0,
 		Member: postID,
 	})
+	cKey := getRedisKey(KeyCommunitySetPF + strconv.Itoa(int(communityID)))
+	pipeline.SAdd(ctx, cKey, postID)
 	_, err = pipeline.Exec(ctx)
 	if err != nil {
 		zap.L().Error("redis post failed", zap.Error(err))
@@ -40,8 +43,7 @@ func CreatePost(postID uint64) (err error) {
 	return
 }
 
-func VoteForPost(userID, postID string, direction float64) (err error) {
-	ctx := context.Background()
+func VoteForPost(ctx context.Context, userID, postID string, direction float64) (err error) {
 	//Judge the voting situation
 	//Retrieve the post's creation time
 	postTime := client.ZScore(ctx, getRedisKey(KeyPostTimeZSet), postID).Val()
@@ -52,6 +54,10 @@ func VoteForPost(userID, postID string, direction float64) (err error) {
 	//Make change to vote
 	//Search for the previous vote record
 	originalVoteVal := client.ZScore(ctx, getRedisKey(KeyPostVotedZSetPF+postID), userID).Val()
+	//If the vote direction is the same as before, no need to process
+	if direction == originalVoteVal {
+		return ErrVoteRepeated
+	}
 	var dir float64
 	if direction > originalVoteVal {
 		dir = 1

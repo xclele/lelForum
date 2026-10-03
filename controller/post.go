@@ -26,7 +26,7 @@ func CreatePostHandler(c *gin.Context) {
 	}
 	p.AuthorID = userID
 	//Save to the database
-	if err = logic.CreatePost(p); err != nil {
+	if err = logic.CreatePost(c.Request.Context(), p); err != nil {
 		zap.L().Error("logic.CreatePost() failed", zap.Error(err))
 		ResponseError(c, CodeServerBusy)
 		return
@@ -52,7 +52,8 @@ func GetPostDetailHandler(c *gin.Context) {
 	ResponseSuccess(c, data)
 }
 
-func GetPostListHandler(c *gin.Context) {
+// Get list of posts with pagination using the create time in descending order
+/*func GetPostListHandler_v1(c *gin.Context) {
 	//Pagination
 	pageNumStr := c.DefaultQuery("page", "0")
 	pageSizeStr := c.DefaultQuery("size", "10")
@@ -69,6 +70,32 @@ func GetPostListHandler(c *gin.Context) {
 	}
 	//Retrieve data
 	data, err := logic.GetPostList(page, pageSize)
+	//Return response
+	if err != nil {
+		zap.L().Error("logic.GetPostList() failed", zap.Error(err))
+		ResponseError(c, CodeServerBusy)
+		return
+	}
+	ResponseSuccess(c, data)
+}*/
+
+// New version of GetPostListHandler (order by different criteria)
+func GetPostListHandler(c *gin.Context) {
+	// Query format: /posts?page=1&size=10&order=time
+	p := &models.ParamPostList{
+		PageNum:  1,
+		PageSize: 10,
+		Order:    "time",
+	}
+	// Get query parameters
+	if err := c.ShouldBindQuery(p); err != nil {
+		zap.L().Error("GetPostList with invalid param", zap.Error(err))
+		ResponseError(c, CodeInvalidParam)
+		return
+	}
+
+	//Retrieve data
+	data, err := logic.GetPostList(c.Request.Context(), p)
 	//Return response
 	if err != nil {
 		zap.L().Error("logic.GetPostList() failed", zap.Error(err))
@@ -99,7 +126,7 @@ func PostVoteHandler(c *gin.Context) {
 		return
 	}
 
-	if err = logic.VoteForPost(userID, p); err != nil {
+	if err = logic.VoteForPost(c.Request.Context(), userID, p); err != nil {
 		ResponseError(c, CodeServerBusy)
 		return
 	}

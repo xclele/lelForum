@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"context"
 	"lelForum/database/redis"
 	"lelForum/models"
 	"strconv"
@@ -26,10 +27,10 @@ A post can only be voted on within 7 days of its creation
 	1. After 7 days, Save the vote into the database
 	2. Remove the vote data from KeyPostVotedZSetPF
 */
-func VoteForPost(userID uint64, p *models.ParamVoteData) (err error) {
+func VoteForPost(ctx context.Context, userID uint64, p *models.ParamVoteData) (err error) {
 	zap.L().Debug("VoteForPost",
 		zap.Uint64("userID", userID),
 		zap.String("postID", p.PostID),
 		zap.Int8("direction", p.Direction))
-	return redis.VoteForPost(strconv.FormatUint(userID, 10), p.PostID, float64(p.Direction))
+	return redis.VoteForPost(ctx, strconv.FormatUint(userID, 10), p.PostID, float64(p.Direction))
 }

@@ -17,6 +17,7 @@ type Post struct {
 // Use a seperate struct to get authorname and community info
 type ApiPostDetail struct {
 	AuthorName       string             `json:"author_name"`
+	VoteNum          int64              `json:"vote_num"`
 	*Post                               //Integrate Post info
 	*CommunityDetail `json:"community"` //Integrate Community info
 }
